@@ -123,7 +123,7 @@ def generate_spectra(sfr):
     fsps_wave = sp.get_spectrum()[0]
     fsps_spec = np.array(list(map(time_spec, list(product(time_steps, zmets)))))
 
-    manga_wave = np.load("~/manga_wavelengths_AA.npy")
+    manga_wave = np.load("manga_wavelengths_AA.npy")
 
     f = interpolate.interp1d(fsps_wave, fsps_spec)
     fluxes = f(manga_wave)
@@ -166,7 +166,7 @@ def measure_spec(fluxes):
 
     # Define the absorption and bandhead feature databases
     define_abs_db = SpectralFeatureDBDef(key='USERABS',
-                              file_path='~/extindxsnitch.par')
+                              file_path='extindxsnitch.par')
     abs_db = AbsorptionIndexDB(u"USERABS", indxdb_list=define_abs_db)
 
     band_db = BandheadIndexDB(u"BHBASIC")
@@ -178,7 +178,7 @@ def measure_spec(fluxes):
     elric = Elric(specm)
     global emlines
     define_em_db = SpectralFeatureDBDef(key='USEREM',
-                              file_path='~/elpsnitch.par')
+                              file_path='elpsnitch.par')
     emlines  = EmissionLineDB(u"USEREM", emldb_list=define_em_db)
     
     # Check to see if a single spectra has been input. If the single spectra is shape (# of wavelengths,) then reshape 
@@ -241,16 +241,62 @@ def save_lookup(spectra):
     lu_mask = np.append(emls_mask, idms_mask, axis=1).reshape(-1, 7) # Halpha 0th, Hbeta 2nd, MgB 3rd, Fe5270 4th, Fe5335 5th, HDeltaA 6th, D4000 7th
 
     with l:
-        if os.path.isfile("~/spectral_parameter_measurements.npz"):
-            with np.load("~/spectral_parameter_measurements.npz") as sp_lu:
-                np.savez("~/spectral_parameter_measurements.npz", lookup=np.append(sp_lu["lookup"], lu, axis=0))
-            with np.load("~/spectral_parameter_measurements_mask.npz") as sp_lu_mask:
-                np.savez("~/spectral_parameter_measurements_mask.npz", lookupmask=np.append(sp_lu_mask["lookupmask"], lu_mask, axis=0))
-            with np.load("~/spectral_parameter_measurements_error.npz") as sp_lu_err:
-                np.savez("~/spectral_parameter_measurements_error.npz", lookupmask=np.append(sp_lu_err["lookuperr"], lu_err, axis=0))
+        if os.path.isfile("spectral_parameter_measurements.npz"):
+            with np.load("spectral_parameter_measurements.npz") as sp_lu:
+                np.savez("spectral_parameter_measurements.npz", lookup=np.append(sp_lu["lookup"], lu, axis=0))
+            with np.load("spectral_parameter_measurements_mask.npz") as sp_lu_mask:
+                np.savez("spectral_parameter_measurements_mask.npz", lookupmask=np.append(sp_lu_mask["lookupmask"], lu_mask, axis=0))
+            with np.load("spectral_parameter_measurements_error.npz") as sp_lu_err:
+                np.savez("spectral_parameter_measurements_error.npz", lookupmask=np.append(sp_lu_err["lookuperr"], lu_err, axis=0))
             
         else:
-            np.savez("~/spectral_parameter_measurements.npz", lookup=lu)
-            np.savez("~/spectral_parameter_measurements_mask.npz", lookupmask=lu_mask)
-            np.savez("~/spectral_parameter_measurements_error.npz", lookuperr=lu_err)
+            np.savez("spectral_parameter_measurements.npz", lookup=lu)
+            np.savez("spectral_parameter_measurements_mask.npz", lookupmask=lu_mask)
+            np.savez("spectral_parameter_measurements_error.npz", lookuperr=lu_err)          
 
+
+def walker_plot(samples, nwalkers, ndim=3, limit=-1, truth=[np.nan, np.nan, np.nan]):
+
+    """ Plotting function to visualise the steps of the walkers in each parameter dimension. 
+        
+        :samples:
+        Array of shape (nsteps*nwalkers, 3) produced by the sample function in snitch_mcmc.py
+        
+        :nwalkers:
+        The number of walkers that step around the parameter space used to produce the samples by the sample function. M
+        ust be an even integer number larger than ndim.
+
+        :ndim:
+        Number of parameters fit by emcee. Default is 3. Optional. 
+        
+        :limit:
+        Integer value less than nsteps to plot the walker steps to. Optional. 
+
+        :truth:
+        Actual values of [Z, tq, tau] if known - can also be used to input the 50th percentile to show the quoted values. Optional. 
+
+        RETURNS:
+        :fig:
+        The figure object
+        """
+    s = samples.reshape(nwalkers, -1, ndim)
+    s = s[:,:limit, :]
+    fig = plt.figure(figsize=(8,12))
+    ax1 = plt.subplot(3,1,1)
+    ax2 = plt.subplot(3,1,2)
+    ax3 = plt.subplot(3,1,3)
+    ax1.plot(s[:,:,0].T, 'k')
+    ax1.axhline(truth[0], color='r')
+    ax2.plot(s[:,:,1].T, 'k')
+    ax2.axhline(truth[1], color='r')
+    ax3.plot(s[:,:,2].T, 'k')
+    ax3.axhline(truth[2], color='r')
+    ax1.tick_params(axis='x', labelbottom='off')
+    ax2.tick_params(axis='x', labelbottom='off')
+    ax3.set_xlabel(r'step number')
+    ax1.set_ylabel(r'$Z$')
+    ax2.set_ylabel(r'$t_{quench}$')
+    ax3.set_ylabel(r'$\tau$')
+    plt.subplots_adjust(hspace=0.1)
+
+    return fig
