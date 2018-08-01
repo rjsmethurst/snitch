@@ -8,7 +8,7 @@ import matplotlib as mpl
 mpl.use("Agg")
 import matplotlib.pyplot as plt
 
-from functions import sfh, generate_spectra, measure_spec, save_lookup
+from functions import expsfh, generate_spectra, measure_spec, save_lookup
 
 import fsps
 
@@ -57,6 +57,13 @@ np.set_printoptions(suppress=True, precision=4)
 # See the functions.py file for the functions used to define a SFH, generate spectra and measure spectra. 
 # These functions may be altered by a user for their own requirements. 
 #
+# Similarly, you may wish to use the standard expsfh function but change the range of tq, tau parameters
+# defined as defaults. The default time steps and metallicities used are defined on lines 78 and 75 
+# respectively. The default rate of quenching, tau, is defined on line 86. The default tq values change 
+# with each time_step (t_{obs} in Smethurst et al.) to ensure a finer grid to probe rapid quenching. 
+# These defualt values are defined on lines 87 and 94. Change the limits of each of these arrays to be 
+# appropriate for your science goals. 
+#
 # If you have any questions please email rjsmethurst@gmail.com
 #
 ######################################################################################################
@@ -86,13 +93,11 @@ if __name__ == "__main__":
         # tqs needs to be a changeable array so that the logarithmic nature where the grid is finer before the observed time is conserved
         # no matter the time of observation. i.e. tq needs to change as t_obs changes. 
         tqs = np.append(np.flip(time_steps.flatten()[n]- 10**(np.linspace(7, np.log10((time_steps.flatten()[n]-0.1)*1e9), 48))/1e9, axis=0), [time_steps.flatten()[n]-0.001, time_steps.flatten()[n]+0.1], axis=0)
-        taus = 10**np.linspace(6, 9.778, 50)/1e9
-
 
         tq = tqs.reshape(1,-1,1).repeat(len(taus), axis=2)
         tau = taus.reshape(1,1,-1).repeat(len(tqs), axis=1)
 
-        sfr = sfh(tq, tau, age).reshape(age.shape[0], -1) 
+        sfr = expsfh(tq, tau, age).reshape(age.shape[0], -1) 
 
         if os.path.isfile("spectrum_all_star_formation_rates_tobs_"+str(len(time_steps))+"_tq_"+str(len(tqs))+"_tau_"+str(len(taus))+"_Z_"+str(len(zmets))+"_newtqs.npy"):
             prev_fluxes = np.load("spectrum_all_star_formation_rates_tobs_"+str(len(time_steps))+"_tq_"+str(len(tqs))+"_tau_"+str(len(taus))+"_Z_"+str(len(zmets))+"_newtqs.npy", mmap_mode='r')
