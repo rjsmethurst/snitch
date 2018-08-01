@@ -1,19 +1,13 @@
 import os
 import numpy as np
 
-from argparse import ArgumentParser
 import matplotlib as mpl
 mpl.use("Agg")
 import matplotlib.pyplot as plt
 
-from astropy.cosmology import Planck15 
-
 from itertools import product
-from tqdm import tqdm, trange
 
 import fsps
-
-from mangadap.util.instrument import spectrum_velocity_scale
 
 from mangadap.proc.templatelibrary import TemplateLibrary
 from mangadap.proc.ppxffit import PPXFFit
@@ -31,6 +25,20 @@ from mangadap.par.bandheadindexdb import BandheadIndexDB
 from astropy import constants as con
 from astropy import units as un
 c = con.c.to(un.km/un.s).value
+
+
+######################################################################################################
+#
+# August 1st 2018, RJS
+#
+# This file contains all the functions needed to generate synthetic spectra for a defined SFH using 
+# FSPS, measure these spectra using the MaNGA DAP and save it for later use as a look up table. 
+# A user may wish to adapt these functions, either to define their own star formation histories, or 
+# if they wish to use another method of spectral fitting to give spectral parameters. 
+#
+# Documentation is provided but if you have any further questions please email rjsmethurst@gmail.com
+#
+######################################################################################################
 
 
 def sfh(tq, tau, time):
@@ -78,8 +86,7 @@ def sfh(tq, tau, time):
     return sfh.data
 
 
-
-def generate_spectra(sfr, ages, time_steps, zmets):
+def generate_spectra(sfr):
 
     """ 
     This function allows the user to generate many spectra for a defined SFR at given ages, at user defined time steps and metallicities. 
@@ -87,7 +94,8 @@ def generate_spectra(sfr, ages, time_steps, zmets):
     INPUT:
         :sfr:
         The SFRs defined at each age for any number of sfhs, H. Shape (H, SFR)
-        
+       
+    GLOBAL PARAMETERS: 
         :ages: 
         The times at which the sfr is defined for any number of sfhs, H. Shape (H, SFR). 
         
@@ -97,7 +105,7 @@ def generate_spectra(sfr, ages, time_steps, zmets):
         :zmets:
         An array of model metallicity values (range 1-22, see FSPS details) for which a spectrum with the given sfr is returned. Shape (Z,)
         
-        RETURNS:
+    RETURNS:
         :fsps_flux:
         Fluxes at each manga wavelength, M for the number of sfhs input at each time_step and zmet combination. Shape (H*T*Z, M). 
 
@@ -115,6 +123,7 @@ def generate_spectra(sfr, ages, time_steps, zmets):
     fsps_wave = sp.get_spectrum()[0]
     fsps_spec = np.array(list(map(time_spec, list(product(time_steps, zmets)))))
 
+    manga_wave = np.load("~/manga_wavelengths_AA.npy")
 
     f = interpolate.interp1d(fsps_wave, fsps_spec)
     fluxes = f(manga_wave)
@@ -198,4 +207,50 @@ def measure_spec(fluxes):
     return em_model_eml_par, indx_measurement
 
 
+def save_lookup(spectra):
+
+    """
+    This function takes the output from the measure_spec function and turns the measurements, errors and masked values into a 
+    useable format that are then saved as seperate compressed npz arrays.
+
+    INPUTS:
+        :spectra:
+        This is an array of spectra output from the generate_spectra function. We do not recommend inputting large arrays of spectra at once.
+        Instead, we recommend chunking this array with N = 10-100 spectra in each chunk. The fluxes should be reported at each manga wavelength, M 
+        so that the shape is (N, M).
+
+    OUTPUTS:
+        :npz files:
+        The compressed npz files that are saved will all have the shape (N, 7) - as there are 7 spectral parameters recorded for SNITCH. 
+        If the files already exist, the measurements will be appended on to the end of the existing file. If starting a new run, remember to 
+        either delete or rename any files from previous runs so that you know which values are relevant. 
+    """
+
+    eml, idm = measure_spec(spectra)
+    emls = eml["EW"][:, np.where(emlines['name']=='Ha')].reshape(-1,1)
+    idms =idm["INDX"][:,np.logical_or(np.logical_or(indx_names=='D4000', indx_names=='Fe5270'), np.logical_or(np.logical_or(indx_names=='Fe5335', indx_names=='HDeltaA'),  np.logical_or(indx_names=='Hb', indx_names=='Mgb')))].reshape(-1,6)
+
+    emls_err = eml["EWERR"][:, np.where(emlines['name']=='Ha')].reshape(1,-1)
+    idms_err =idm["INDXERR"][:,np.logical_or(np.logical_or(indx_names=='D4000', indx_names=='Fe5270'), np.logical_or(np.logical_or(indx_names=='Fe5335', indx_names=='HDeltaA'),  np.logical_or(indx_names=='Hb', indx_names=='Mgb')))].reshape(1,-1)
+    
+    emls_mask = eml["MASK"][:, np.where(emlines['name']=='Ha')].reshape(-1,1)
+    idms_mask =idm["MASK"][:,np.logical_or(np.logical_or(indx_names=='D4000', indx_names=='Fe5270'), np.logical_or(np.logical_or(indx_names=='Fe5335', indx_names=='HDeltaA'),  np.logical_or(indx_names=='Hb', indx_names=='Mgb')))].reshape(-1,6)
+
+    lu = np.append(emls, idms, axis=1).reshape(-1, 7) # Halpha 0th, Hbeta 2nd, MgB 3rd, Fe5270 4th, Fe5335 5th, HDeltaA 6th, D4000 7th
+    lu_err = np.append(emls_err, idms_err, axis=1).reshape(-1,7) # Halpha 0th, Hbeta 2nd, MgB 3rd, Fe5270 4th, Fe5335 5th, HDeltaA 6th, D4000 7th
+    lu_mask = np.append(emls_mask, idms_mask, axis=1).reshape(-1, 7) # Halpha 0th, Hbeta 2nd, MgB 3rd, Fe5270 4th, Fe5335 5th, HDeltaA 6th, D4000 7th
+
+    with l:
+        if os.path.isfile("~/spectral_parameter_measurements.npz"):
+            with np.load("~/spectral_parameter_measurements.npz") as sp_lu:
+                np.savez("~/spectral_parameter_measurements.npz", lookup=np.append(sp_lu["lookup"], lu, axis=0))
+            with np.load("~/spectral_parameter_measurements_mask.npz") as sp_lu_mask:
+                np.savez("~/spectral_parameter_measurements_mask.npz", lookupmask=np.append(sp_lu_mask["lookupmask"], lu_mask, axis=0))
+            with np.load("~/spectral_parameter_measurements_error.npz") as sp_lu_err:
+                np.savez("~/spectral_parameter_measurements_error.npz", lookupmask=np.append(sp_lu_err["lookuperr"], lu_err, axis=0))
+            
+        else:
+            np.savez("~/spectral_parameter_measurements.npz", lookup=lu)
+            np.savez("~/spectral_parameter_measurements_mask.npz", lookupmask=lu_mask)
+            np.savez("~/spectral_parameter_measurements_error.npz", lookuperr=lu_err)
 
