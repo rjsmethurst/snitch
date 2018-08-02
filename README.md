@@ -1,5 +1,5 @@
 # snitch
 
-![snitchlogo](https://drive.google.com/file/d/1C0fMLnc4-h44Xk3NRhluBRI9RX96RB-t/)
+![snitchlogo](/images/snitch_logo.001.jpeg)
 
 Bayesian inference of star formation histories using emission and absorption spectral features.
