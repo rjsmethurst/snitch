@@ -1,4 +1,5 @@
 from snitch_mcmc import *
+from functions import walker_plot
 from astropy.cosmology import Planck15
 import numpy as np
 import sys
@@ -70,29 +71,29 @@ def snitch(ha, e_ha, d4000, e_d4000, hb, e_hb, hdA, e_hdA, mgfe, e_mgfe, redshif
     # Produce the emcee corner plot showing which part of the parameter space the walkers explored. 
 
     fig = corner.corner(samples, labels=[r'$Z$', r'$t_q$', r'$\log_{10}\tau$'], quantiles=([0.16, 0.5, 0.84]))    
-    fig.savefig('starpy_output_corner_testing_no_oii_finer_pruning_'+str(n)+'newtqs_random_values.png')
+    fig.savefig('snitch_output_corner_'+str(ident)+'.pdf')
     plt.close(fig)
 
     ### The lines below produce the walker positions with each step for the burn in phase and the rest of the run.
     ### Uncomment this section if you'd like these produced. 
 
-    # try:
-    #     fig = walker_plot(samples, nwalkers, -1, [k[n,0], k[n,1], k[n,2]], n)
-    #     fig.tight_layout()
-    #     fig.savefig('walkers_steps_pruning_no_oii_finer_'+str(n)+'newtqs_random_values.pdf')
-    #     plt.close(fig)
-    # except(ValueError):
-    #     pass
+    try:
+        fig = walker_plot(samples, nwalkers, ndim, -1, [Z_mcmc[0], tq_mcmc[0], log_tau_mcmc[0]])
+        fig.tight_layout()
+        fig.savefig('walkers_steps_with_pruning_'+str(ident)+'.pdf')
+        plt.close(fig)
+    except(ValueError):
+        pass
 
-    # with np.load('samples_burn_in_'+str(n)+'.npz') as burninload:
-    #     try:
-    #         fig = walker_plot(burninload['samples'], nwalkers, -1, [k[n,0], k[n,1], k[n,2]], n)
-    #         fig.tight_layout()
-    #         fig.savefig('walkers_steps_burn_in_wihtout_pruning_no_oii_finer_'+str(n)+'newtqs_random_values.pdf')
-    #         plt.close(fig)
-    #     except(ValueError):
-    #         pass
-    #     burninload.close()
+    with np.load('samples_burn_in_'+str(ident)+'.npz') as burninload:
+        try:
+            fig = walker_plot(burninload['samples'], nwalkers, ndim, -1, [Z_mcmc[0], tq_mcmc[0], log_tau_mcmc[0]])
+            fig.tight_layout()
+            fig.savefig('walkers_steps_burn_in_without_pruning_'+str(ident)+'.pdf')
+            plt.close(fig)
+        except(ValueError):
+            pass
+        burninload.close()
 
     plt.close('all')
 

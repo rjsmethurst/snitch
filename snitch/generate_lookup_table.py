@@ -73,31 +73,32 @@ if __name__ == "__main__":
 
     padova_zmet = np.array([0.0002, 0.0003, 0.0004, 0.0005, 0.0006, 0.0008, 0.001, 0.0012, 0.0016, 0.0020, 0.0025, 0.0031, 0.0039, 0.0049, 0.0061, 0.0077, 0.0096, 0.012, 0.015, 0.019, 0.024, 0.03])
     padova_zmetsol = 0.019
-    padova_solmet = pad_zmet/pad_zmetsol
+    padova_solmet = padova_zmet/padova_zmetsol
     global zmets
     zmets = (np.linspace(0, 10, 11)*2 + 1).astype(int)
-
+    
     global time_steps
     time_steps = Planck15.age(10**np.linspace(-0.824, -3.295, 15)).reshape(-1,1,1).value
-
     maxtq = np.log10(np.nanmax(time_steps)*1e9)
 
     global ages
     ages = np.flip(13.805 - 10**(np.linspace(7, 10.14, 100))/1e9, axis=0).reshape(-1,1,1)
 
-    tqs = np.append(np.flip(time_steps.flatten()[0]- 10**(np.linspace(7, np.log10((time_steps.flatten()[0]-0.1)*1e9), 48))/1e9, axis=0), [time_steps.flatten()[0]-0.001, time_steps.flatten()[0]+0.1], axis=0)
-    taus = 10**np.linspace(6, 9.778, 50)/1e9
+    tqs = np.append(np.flip(time_steps.flatten()[0]- 10**(np.linspace(7, np.log10((time_steps.flatten()[0]-0.1)*1e9), 24))/1e9, axis=0), [time_steps.flatten()[0]-0.001, time_steps.flatten()[0]+0.1], axis=0)
+    taus = 10**np.linspace(6, 9.778, 10)/1e9
+
+    manga_wave = np.load("manga_wavelengths_AA.npy")
 
     for n in range(len(time_steps)):
 
         # tqs needs to be a changeable array so that the logarithmic nature where the grid is finer before the observed time is conserved
         # no matter the time of observation. i.e. tq needs to change as t_obs changes. 
-        tqs = np.append(np.flip(time_steps.flatten()[n]- 10**(np.linspace(7, np.log10((time_steps.flatten()[n]-0.1)*1e9), 48))/1e9, axis=0), [time_steps.flatten()[n]-0.001, time_steps.flatten()[n]+0.1], axis=0)
+        tqs = np.append(np.flip(time_steps.flatten()[n]- 10**(np.linspace(7, np.log10((time_steps.flatten()[n]-0.1)*1e9), 10))/1e9, axis=0), [time_steps.flatten()[n]-0.001, time_steps.flatten()[n]+0.1], axis=0)
 
         tq = tqs.reshape(1,-1,1).repeat(len(taus), axis=2)
         tau = taus.reshape(1,1,-1).repeat(len(tqs), axis=1)
 
-        sfr = expsfh(tq, tau, age).reshape(age.shape[0], -1) 
+        sfr = expsfh(tq, tau, ages).reshape(ages.shape[0], -1) 
 
         if os.path.isfile("spectrum_all_star_formation_rates_tobs_"+str(len(time_steps))+"_tq_"+str(len(tqs))+"_tau_"+str(len(taus))+"_Z_"+str(len(zmets))+"_newtqs.npy"):
             prev_fluxes = np.load("spectrum_all_star_formation_rates_tobs_"+str(len(time_steps))+"_tq_"+str(len(tqs))+"_tau_"+str(len(taus))+"_Z_"+str(len(zmets))+"_newtqs.npy", mmap_mode='r')
@@ -106,27 +107,27 @@ if __name__ == "__main__":
                 fluxes = prev_fluxes
                 print("Loaded previously generated spectra array and it's the right length.")
             else:
-                more_fluxes = np.array(list(map(generate_spectra, tqdm(list(sfr.T))))).reshape(-1, len(manga_wave))
+                more_fluxes = np.array(list(map(generate_spectra, tqdm(list(product(time_steps[n], [zmets], [ages], sfr.T)))))).reshape(-1, len(manga_wave))
                 print("We're still generating more spectra, strap in for a wait...")
                 fluxes = np.append(prev_fluxes, more_fluxes, axis=0)
                 np.save("spectrum_all_star_formation_rates_tobs_"+str(len(time_steps))+"_tq_"+str(len(tqs))+"_tau_"+str(len(taus))+"_Z_"+str(len(zmets))+"_newtqs.npy", np.append(fluxes, more_fluxes, axis=0))
 
         else:
             print("You haven't generated spectra before for these SFH parameters, so this is going to take some time...")
-            fluxes = np.array(list(map(generate_spectra, tqdm(list(sfr.T))))).reshape(-1, len(manga_wave))
+            fluxes = np.array(list(map(generate_spectra, tqdm(list(product(time_steps[n], [zmets], [ages], sfr.T)))))).reshape(-1, len(manga_wave))
             np.save("spectrum_all_star_formation_rates_tobs_"+str(len(time_steps))+"_tq_"+str(len(tqs))+"_tau_"+str(len(taus))+"_Z_"+str(len(zmets))+"_newtqs.npy", fluxes)
        
 
 
-    st = time.time()
+st = time.time()
 
-    chunk_length = 100
-    idxs =np.arange(0, len(fluxes), chunk_length)
-    for n in range(len(idxs)-1):
-        #print('Measuring spectra with indexes: ' idxs[n], ':', idxs[n+1])
-        save_lookup(fluxes[idxs[n]:idxs[n+1]])
+chunk_length = 100
+idxs =np.arange(0, len(fluxes)+chunk_length, chunk_length)
+for n in range(len(idxs)-1):
+    #print('Measuring spectra with indexes: ' idxs[n], ':', idxs[n+1])
+    save_lookup(fluxes[idxs[n]:idxs[n+1]])
 
-    print("Look up table generation took ", (time.time() - st)/60./60., " hours to complete.\n")
+print("Look up table generation took ", (time.time() - st)/60./60., " hours to complete.\n")
 
 
 
