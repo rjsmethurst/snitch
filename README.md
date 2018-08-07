@@ -1,6 +1,6 @@
 # snitch
 
-![snitchlogo](/images/snitch_logo.001.jpeg)
+<img align="left" width="350" src="/images/snitch_logo.001.jpeg">
 
 Code to conduct Bayesian inference of star formation histories using measured emission and absorption features of a galaxy or IFU spectra. This code is described in Smethurst et al. (2018; in prep) and we encourage all users to read that paper before using this code. 
 
