@@ -1,0 +1,43 @@
+#------------------------------------------------------------------------
+# Created by: Becky Smethurst (BS)
+# Date: 27 June 2018
+#
+# Line wavelengths are "Ritz" wavelengths from NIST:
+#   http://physics.nist.gov/PhysRefData/ASD/Html/help.html
+#
+# Line wavelengths are in: VACUUM
+#
+# The columns are described in README.
+#
+# The definitions come from the ELPFULL database from which I have removed uneccesary lines. 
+#
+#------------------------------------------------------------------------
+
+typedef struct {
+    int index;
+    char name[6];
+    double lambda;
+    char waveref[3];
+    char action;
+    double relative_flux;
+    char mode[6];
+    char profile[30];
+    int ncomp;
+    int output_model;
+    double par[3];
+    int fix[3];
+    char lower_bound[3][10];
+    char upper_bound[3][10];
+    int log_bounded[3];
+    double blueside[2];
+    double redside[2];
+} DAPEML;
+
+
+DAPEML  27  Hdel    4102.8991  vac  f   1.000    f  GaussianLineProfile  1  1  { 1.0 0.0 100.0 }  { 0 0 0 }  {  0.0 None 30.0 }  { None None 400. }  { 0 0 1 }  { 4072.9  4092.9 } { 4112.9  4132.9 }
+DAPEML  33  Hb      4862.691   vac  f   1.000    f  GaussianLineProfile  1  1  { 1.0 0.0 100.0 }  { 0 0 0 }  {  0.0 None 30.0 }  { None None 400. }  { 0 0 1 }  { 4798.9  4838.9 } { 4885.6  4925.6 }
+DAPEML  43  NII     6549.86    vac  f   1.000  w44  GaussianLineProfile  1  1  { 1.0 0.0 100.0 }  { 0 0 0 }  {  0.0 None 30.0 }  { None None 400. }  { 0 0 1 }  { 6483.0  6513.0 } { 6623.0  6653.0 }
+DAPEML  44  Ha      6564.632   vac  f   1.000    f  GaussianLineProfile  1  1  { 1.0 0.0 100.0 }  { 0 0 0 }  {  0.0 None 30.0 }  { None None 400. }  { 0 0 1 }  { 6483.0  6513.0 } { 6623.0  6653.0 }
+DAPEML  45  NII     6585.271   vac  f   1.000  w44  GaussianLineProfile  1  1  { 1.0 0.0 100.0 }  { 0 0 0 }  {  0.0 None 30.0 }  { None None 400. }  { 0 0 1 }  { 6483.0  6513.0 } { 6623.0  6653.0 }
+
+

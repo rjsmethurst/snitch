@@ -1,0 +1,56 @@
+#------------------------------------------------------------------------
+# Created by: Kyle Westfall (KBW)
+# Date: 18 Mar 2016
+#
+# Indices 1-21 are the Lick indices as defined by:
+#       Trager et al. (1998, ApJS, 116 1)
+# Indices 22-25 are from:
+#       Worthey & Ottaviani (1997, ApJS, 111, 377)
+# Indices 26-33 are from the compiliation provided by:
+#       Conroy & van Dokkum (2012, ApJ, 747, 69)
+#   with references to:
+#       Diaz et al. (1989, MNRAS, 239, 325)
+#       Cenarro et al. (2001, MNRAS, 326, 959)
+#       Serven et al. (2005, ApJ, 627, 754)
+#
+#   NOTE:  In a private communication with C. Conroy, he says: "You
+#   might want to spot check the locations of the wavelength boundaries
+#   against a spectrum at high dispersion.  I defined these boundaries
+#   at low sigma (~100 km/s) and realized only later that some of them
+#   (e.g., NaI) are not optimally defined for sigma~300 galaxies. If
+#   you’re also using NaI then you might want to consider re-defining
+#   things."  We need someone in the team to do this assessment!
+#
+# Index 34 is from:
+#       Spiniello et al. (2012, ApJL, 753, 32)
+# Indices 35-38 are from:
+#       Spiniello et al. (2014, MNRAS, 438, 1483)
+# Index 39 is from (requested by Baitian Tang):
+#       Serven, Worthey, & Briley (2005, ApJ, 627, 754)
+#
+# The columns are described in README.
+#
+# Revisions:
+#   11 Oct 2016: Added index 39
+#------------------------------------------------------------------------
+
+typedef struct {
+    int index;
+    char name[9];
+    double primary[2];
+    double blueside[2];
+    double redside[2];
+    char waveref[3];
+    char units[3];
+    int component;
+} DAPABI;
+
+
+
+DAPABI  9  Hb         { 4847.875  4876.625 }  { 4827.875  4847.875 }  { 4876.625  4891.625 }  air  ang  0
+DAPABI 13  Mgb        { 5160.125  5192.625 }  { 5142.625  5161.375 }  { 5191.375  5206.375 }  air  ang  0
+DAPABI 14  Fe5270     { 5245.650  5285.650 }  { 5233.150  5248.150 }  { 5285.650  5318.150 }  air  ang  0
+DAPABI 15  Fe5335     { 5312.125  5352.125 }  { 5304.625  5315.875 }  { 5353.375  5363.375 }  air  ang  0
+DAPABI 22  HDeltaA    { 4083.500  4122.250 }  { 4041.600  4079.750 }  { 4128.500  4161.000 }  air  ang  0
+
+
