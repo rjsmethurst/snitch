@@ -23,7 +23,7 @@ The python scripts are available in the snitch folder, so make sure to then:
 
 ## Basic Usage 
 
-In it's default format, snitch needs 5 spectral parameters, their corresponding measurement errors, the observed redshift and an identification string to infer a SFH. These 5 parameters are the EW\[H$\alpha$\], Dn4000, H$\beta$, H$\delta_A$ and MgFe'. If you wish to use snitch with these parameters then from the command line run:
+In it's default format, snitch needs 5 spectral parameters, their corresponding measurement errors, the observed redshift and an identification string to infer a SFH. These 5 parameters are the EW\[H⍺\], D<sub>n</sub>4000, Hβ, Hδ<sub>A</sub> and MgFe'. If you wish to use snitch with these parameters then from the command line run:
 
 ```python3 snitch.py ha e_ha d4000 e_d4000 hbeta e_hbeta hdeltaA e_hdeltaA mgfe e_mgfe redshift identification```
 
@@ -43,7 +43,7 @@ and will produce plots showing the MCMC 'walker' steps with time and as a corner
 
 The basic snitch runs using a pre-generated look up table of the 5 spectral parameters listed above measured in model spectra generated using Charlie Conroy's FSPS models. This look up table is generated for 15 time of observation (i.e. redshift), 11 metallicities, 50 quenching rates and 50 quenching times (which change with every time of observation to ensure a finer grid for recent quenching times). 
 
-We generate this look up table in the ranges: $11.85 < t_obs \[Gyr\] < 13.79$ (i.e $0.15 > z > 0.0005$), $0.01 > Z \[Z_{\odot}\] > 1.27$,  $0.001 < \tau \[Gyr\] < 6.0$, $0.01 < t_q \[Gyr\] < 13.89$. 
+We generate this look up table in the ranges: 11.85 < t<sub>obs</sub> \[Gyr\] < 13.79 (i.e 0.15 > z > 0.0005), 0.01 > Z \[Z<sub>☉</sub>\] > 1.27,  0.001 < τ \[Gyr\] < 6.0, 0.01 < t<sub>q</sub> \[Gyr\] < 13.89. 
 
 If this look up table is not appropriate for your science case, perhaps your observations span a higher redshift range or you would prefer to work with another spectral parameter, then you will need to generate your own look up table. A user can do this by altering the `generate_lookup_table.py` and `functions.py` scripts. Note that generating a look up table can take a significant amount of time depending on how many sfh parameters it is generated over (for the 15x11x50x50 array generated for  the basic usage this took a week to generate the spectra and then measure the parameters). Outlined below are three scenarios in which a new look up table may be required.
 
