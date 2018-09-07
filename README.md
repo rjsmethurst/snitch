@@ -2,7 +2,7 @@
 
 <img align="left" width="350" src="/images/snitch_logo.001.jpeg">
 
-Code to conduct Bayesian inference of star formation histories using measured emission and absorption features of a galaxy or IFU spectra. This code is described in Smethurst et al. (2018; in prep) and we encourage all users to read that paper before using this code. 
+Code to conduct Bayesian inference of star formation histories using measured emission and absorption features of a galaxy or IFU spectra. This code is described in Smethurst et al. (2018; in prep - see [here](https://trac.sdss.org/attachment/wiki/MANGA/Projects/agn_gradients/snitch.pdf) for SDSS members) and we encourage all users to read that paper before using this code. 
 
 
 ## Prerequisites
@@ -20,6 +20,8 @@ Clone this repository, either through the GitHub desktop interface or with the f
 The python scripts are available in the snitch folder, so make sure to then:
 
 ``` cd snitch/snitch/```
+
+Once the paper describing this code is accepted for publication we intend to publish this repo with a DOI so that both a paper and the code can be cited. 
 
 ## Basic Usage 
 
