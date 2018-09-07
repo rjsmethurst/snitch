@@ -40,10 +40,10 @@ time_steps = Planck15.age(10**np.linspace(-0.824, -3.295, 15)).value
 taus = 10**np.linspace(6, 9.778, 50)/1e9
 
 # Load the previous generated look up table spectral parameter values 
-with np.load('spectral_parameter_measurements.npz') as orig_pred:
+with np.load('../../data/emls_par_pool_mapped_nozshift_newtqs.npz') as orig_pred:
     pred = orig_pred['lookup']
     
-with np.load('spectral_parameter_measurements_mask.npz') as orig_pred:
+with np.load('../../data/emls_mask_par_pool_mapped_nozshift_newtqs.npz') as orig_pred:
     mask = orig_pred['lookupmask']
 
 tqs = np.append(np.flip(time_steps.flatten()[0]- 10**(np.linspace(7, np.log10((time_steps.flatten()[0]-0.1)*1e9), 48))/1e9, axis=0), [time_steps.flatten()[0]-0.001, time_steps.flatten()[0]+0.1], axis=0)

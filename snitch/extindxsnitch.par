@@ -1,37 +1,39 @@
 #------------------------------------------------------------------------
-# Created by: Kyle Westfall (KBW)
-# Date: 18 Mar 2016
+# Created by: Becky Smethurst (RJS)
+# Date: 27 June 2018
 #
-# Indices 1-21 are the Lick indices as defined by:
-#       Trager et al. (1998, ApJS, 116 1)
-# Indices 22-25 are from:
-#       Worthey & Ottaviani (1997, ApJS, 111, 377)
-# Indices 26-33 are from the compiliation provided by:
-#       Conroy & van Dokkum (2012, ApJ, 747, 69)
-#   with references to:
-#       Diaz et al. (1989, MNRAS, 239, 325)
-#       Cenarro et al. (2001, MNRAS, 326, 959)
-#       Serven et al. (2005, ApJ, 627, 754)
+# The definitions come from the EXTINDX MaNGA DAP database from which I have removed uneccesary indices not needed for SNITCH. 
 #
-#   NOTE:  In a private communication with C. Conroy, he says: "You
-#   might want to spot check the locations of the wavelength boundaries
-#   against a spectrum at high dispersion.  I defined these boundaries
-#   at low sigma (~100 km/s) and realized only later that some of them
-#   (e.g., NaI) are not optimally defined for sigma~300 galaxies. If
-#   you’re also using NaI then you might want to consider re-defining
-#   things."  We need someone in the team to do this assessment!
+# Columns in the parameter files with a given absorption-index bandpass
+# filter database are:
 #
-# Index 34 is from:
-#       Spiniello et al. (2012, ApJL, 753, 32)
-# Indices 35-38 are from:
-#       Spiniello et al. (2014, MNRAS, 438, 1483)
-# Index 39 is from (requested by Baitian Tang):
-#       Serven, Worthey, & Briley (2005, ApJ, 627, 754)
+#   INDEX:      
+#       Unique integer identifier of the absorption index.
+#   NAME:
+#       Name of the index, read as a string.
+#   PRIMARY:   
+#       A two-element vector with the starting and ending wavelength for
+#       the primary bandpass surrounding the absorption feature(s).
+#   BLUESIDE:   
+#       A two-element vector with the starting and ending wavelength for
+#       a bandpass to the blue of the primary band.  Used to set the
+#       continuum level near the absorption feature(s).
+#   REDSIDE:
+#       A two-element vector with the starting and ending wavelength for
+#       a bandpass to the red of the primary band.  Used to set the
+#       continuum level near the absorption feature(s).
+#   WAVEREF:
+#       Set the reference frame of the wavelengths provided to be in
+#       either air or vacuum using the keywords 'air' or 'vac',
+#       respectively.
+#   UNITS:
+#       Units for the absorption index, which must be either 'ang' or
+#       'mag'.
+#   COMPONENT:
+#       Binary flag (0-false,1-true) that the index is a component of a
+#       composite index.  If true (1), all components with the same NAME
+#       are added together to form the composite index.
 #
-# The columns are described in README.
-#
-# Revisions:
-#   11 Oct 2016: Added index 39
 #------------------------------------------------------------------------
 
 typedef struct {

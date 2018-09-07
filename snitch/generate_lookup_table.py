@@ -45,6 +45,7 @@ from multiprocessing import Lock
 global l
 l = Lock()
 
+c = con.c.to(un.km/un.s).value
 
 np.set_printoptions(suppress=True, precision=4)
 
@@ -88,6 +89,7 @@ if __name__ == "__main__":
     taus = 10**np.linspace(6, 9.778, 50)/1e9
 
     manga_wave = np.load("manga_wavelengths_AA.npy")
+    manga_hz = c*(un.km/un.s).to(un.AA/un.s)/manga_wave
 
     for n in range(len(time_steps)):
 
@@ -124,10 +126,10 @@ if __name__ == "__main__":
 st = time.time()
 
 chunk_length = 100
-idxs =np.arange(0, len(fluxes)+chunk_length, chunk_length)
+idxs =np.arange(206300, len(fluxes)+chunk_length, chunk_length) #len(fluxes)+chunk_length, chunk_length)
 for n in range(len(idxs)-1):
     print("Measuring spectra with indexes: ", idxs[n], ":", idxs[n+1])
-    save_lookup(fluxes[idxs[n]:idxs[n+1]])
+    save_lookup(fluxes[idxs[n]:idxs[n+1]]*(manga_hz/manga_wave))
 
 print("Look up table generation took ", (time.time() - st)/60./60., " hours to complete.\n")
 

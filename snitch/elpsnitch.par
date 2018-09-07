@@ -7,9 +7,105 @@
 #
 # Line wavelengths are in: VACUUM
 #
-# The columns are described in README.
+# The definitions come from the ELPFULL MaNGA DAP database from which I have removed uneccesary lines not needed for SNITCH . 
 #
-# The definitions come from the ELPFULL database from which I have removed uneccesary lines. 
+# Columns in the emission-line database parameter files are:
+#
+#   INDEX:
+#       Unique integer identifier of the emission line.  Used when tying
+#       lines together.
+#   NAME:
+#       Name of the element, read as a string.
+#   LAMBDA:
+#       Rest frame wavelength of the emission line to fit; can be in air
+#       or vacuum.  DAP assumes the input is in VACUUM if not specified
+#       in the definition of the database using
+#       :class:`EmissionLineDBDef`
+#   WAVEREF:
+#       Set the reference frame of the wavelengths provided to be in
+#       either air or vacuum using the keywords 'air' or 'vac',
+#       respectively.
+#   ACTION:
+#       Describes how the line should be treated.  Possible values are:
+#
+#           'i': ignore the line, as if the line were commented out.
+#
+#           'f': fit the line and mask the line when fitting the stellar
+#                continuum.
+#
+#           'm': mask the line when fitting the stellar continuum but do
+#                NOT fit the line itself
+#
+#           's': defines a sky line that should be masked.  When masked,
+#                the wavelength of the line is NOT adjusted for the
+#                redshift of the object spectrum.
+#   FLUX:
+#       RELATIVE flux of the emission (positive) or absorption
+#       (negative) lines.  This should most often be unity when the flux
+#       is not tied to another line; see 'MODE'.
+#   MODE:
+#       Fitting mode for the line.  Possible values are:
+#
+#           'f': Fit the line independently of all others in its own
+#           window.
+#
+#           'wN': Fit the line with untied parameters, but use a window
+#           that includes both this line and the line with index N.
+#
+#           'xN': Fit the line with its flux tied to the line with index
+#           N.
+#
+#           'vN': Fit the line with the velocity tied to the line with
+#           index N.
+#
+#           'sN': Fit the line with the velocity dispersion tied to the
+#           line with index N.
+#
+#           'kN': Fit the line with the velocity and velocity dispersion
+#           tied to the line with index N.
+#
+#           'aN': Fit the line with the flux, velocity, and velocity
+#           dispersion tied to the line with index N.
+#   PAR:
+#       A list of the initial guess for the line profile parameters.
+#       The number of parameters must match the struct declaration at
+#       the top of the file.  The initial parameters are automatically
+#       adjusted to provide any designated flux ratios, and the center
+#       is automatically adjusted to the provided redshift for the
+#       spectrum.  For example, for a GaussianLineProfile, this is
+#       typically set to "{1.0 0.0 100.0}".
+#   FIX:
+#       A list of flags for fixing the input guess parameters during the
+#       fit.  Use 0 for a free parameter, 1 for a fixed parameter.  The
+#       parameter value is only fixed *AFTER* adjusted in the flux and
+#       or center based on the redshift and the implied tied parameters.
+#       For a free set of parameters using a GaussianLineProfile, this
+#       is set to "{ 0 0 0 }".
+#   LOWER_BOUND:
+#       A list of lower bounds for the parameters.  For each parameter,
+#       use None to indicate no lower bound.  For a GaussianLineProfile
+#       with positive flux and standard deviation, this is set to
+#       '{ 0.0 None 0.0 }'.
+#   UPPER_BOUND:
+#       A list of upper bounds for the parameters.  For each parameter,
+#       use None to indicate no upper bound.  For a GaussianLineProfile
+#       with maximum standard deviation of 800 km/s, this is set to
+#       '{ None None 800.0 }'.
+#   LOG_BOUND:
+#       A list of flags used when determining if a fit parameter is near
+#       the imposed boundary.  If true, the fraction of the boundary
+#       range used is done in logarithmic, not linear, separation.  Use
+#       0 for False, 1 for True.
+#   BLUESIDE:   
+#       A two-element vector with the starting and ending wavelength for
+#       a bandpass blueward of the emission line, which is used to set
+#       the continuum level near the emission line when calculating the
+#       equivalent width.
+#   REDSIDE:   
+#       A two-element vector with the starting and ending wavelength for
+#       a bandpass redward of the emission line, which is used to set
+#       the continuum level near the emission line when calculating the
+#       equivalent width.
 #
 #------------------------------------------------------------------------
 
