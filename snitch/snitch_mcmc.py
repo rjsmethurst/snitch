@@ -27,32 +27,29 @@ from scipy.interpolate import NearestNDInterpolator
 ######################################################################################################
 
 
+pad_zmet = np.array([0.0002, 0.0003, 0.0004, 0.0005, 0.0006, 0.0008, 0.001, 0.0012, 0.0016, 0.0020, 0.0025, 0.0031, 0.0039, 0.0049, 0.0061, 0.0077, 0.0096, 0.012, 0.015, 0.019, 0.024, 0.03])
+pad_zmetsol = 0.019
 
+pad_solmet = pad_zmet/pad_zmetsol
+zmets = np.append((np.linspace(0, 10, 11)*2 + 1).astype(int), [22.])
+zsolmets = pad_solmet[(zmets-1).astype(int)] 
 
-padova_zmet = np.array([0.0002, 0.0003, 0.0004, 0.0005, 0.0006, 0.0008, 0.001, 0.0012, 0.0016, 0.0020, 0.0025, 0.0031, 0.0039, 0.0049, 0.0061, 0.0077, 0.0096, 0.012, 0.015, 0.019, 0.024, 0.03])
-padova_zmetsol = 0.019
-padova_solmet = padova_zmet/padova_zmetsol
-
-zmets = (np.linspace(0, 10, 11)*2 + 1).astype(int)
-zsolmets = padova_solmet[(zmets-1).astype(int)] 
-
-time_steps = Planck15.age(10**np.linspace(-0.824, -3.295, 15)).value
+#ages = Planck15.age(10**np.linspace(-0.824, -2.268, 25))[-7:-5].value
+time_steps = Planck15.age(10**np.linspace(-0.824, -3.295, 15)).reshape(-1,1,1).value
 taus = 10**np.linspace(6, 9.778, 50)/1e9
 
-# Load the previous generated look up table spectral parameter values 
-with np.load('../../data/emls_par_pool_mapped_nozshift_newtqs.npz') as orig_pred:
+with np.load('/Users/becky/Projects/mangaagn/snitch/snitch/emls_par_pool_mapped_nozshift_ppxfcorrect_AA_12zmet.npz') as orig_pred:
     pred = orig_pred['lookup']
     
-with np.load('../../data/emls_mask_par_pool_mapped_nozshift_newtqs.npz') as orig_pred:
-    mask = orig_pred['lookupmask']
-
+with np.load('/Users/becky/Projects/mangaagn/snitch/snitch/emls_mask_par_pool_mapped_nozshift_ppxfcorrect_AA_12zmet.npz') as orig_mask:
+    mask = orig_mask['lookupmask']
+    
 tqs = np.append(np.flip(time_steps.flatten()[0]- 10**(np.linspace(7, np.log10((time_steps.flatten()[0]-0.1)*1e9), 48))/1e9, axis=0), [time_steps.flatten()[0]-0.001, time_steps.flatten()[0]+0.1], axis=0)
 
-# Create the list of combination of t_obs, tq, tau and Z values taking into account the fact that the tq grid changes everytime t_obs changes
-sv = np.array(list(product([time_steps[0]], tqs, np.log10(taus), zsolmets)))
+sv = np.array(list(product(time_steps[0][0], tqs, np.log10(taus), zsolmets)))
 for n in range(1, len(time_steps)):
-    tqs = np.append(np.flip(time_steps[n]- 10**(np.linspace(7, np.log10((time_steps[n]-0.1)*1e9), 48))/1e9, axis=0), [time_steps[n]-0.001, time_steps[n]+0.1], axis=0)
-    sv = np.append(sv, np.array(list(product([time_steps[n]], tqs, np.log10(taus), zsolmets))), axis=0)
+    tqs = np.append(np.flip(time_steps.flatten()[n]- 10**(np.linspace(7, np.log10((time_steps.flatten()[n]-0.1)*1e9), 48))/1e9, axis=0), [time_steps.flatten()[n]-0.001, time_steps.flatten()[n]+0.1], axis=0)
+    sv = np.append(sv, np.array(list(product(time_steps[n][0], tqs, np.log10(taus), zsolmets))), axis=0)
     
 
 masked_sp = np.ma.masked_array(data=pred, mask=mask)
@@ -79,7 +76,7 @@ def lookup(theta, age):
     pred = f([age, theta[1], theta[2], theta[0]])[0]
 
     ha_pred = pred[0]
-    d4000_pred = pred[6]
+    d4000_pred = pred[7]
     hb_pred = pred[1]
     hdA_pred = pred[5]
     mgfe_pred = np.sqrt( pred[2] * ( 0.72*pred[3] + 0.28*pred[4] )  )  

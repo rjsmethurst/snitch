@@ -36,6 +36,14 @@ np.set_printoptions(suppress=True, precision=4)
 def snitch(ha, e_ha, d4000, e_d4000, hb, e_hb, hdA, e_hdA, mgfe, e_mgfe, redshift, ident):
 
     age = Planck15.age(redshift).value
+    nll = lambda *args: -lnprobability(*args)
+
+    nwalkers = 100 # number of monte carlo chains
+    nsteps= 200 # number of steps in the monte carlo chain
+    opstart = [1.0, 12.0, np.log10(0.25)] # starting place for the scipy optimisation chains
+    burnin = 1000 # number of steps in the burn in phase of the monte carlo chain
+    ndim = 3 # number of dimensions in the SFH model
+
 
     result_bh = basinhopping(nll, opstart, minimizer_kwargs={"args": (ha, e_ha, d4000, e_d4000, hb, e_hb, hdA, e_hdA, mgfe, e_mgfe, age), "method":'Nelder-Mead'})
     print(result_bh)
@@ -99,8 +107,8 @@ def snitch(ha, e_ha, d4000, e_d4000, hb, e_hb, hdA, e_hdA, mgfe, e_mgfe, redshif
 
     # Print out the best fit values. Note that the actual value of tau in Gyr is printed, not the log value. 
 
-    print('Best fit [Z, tq, tau] values found by SNITCH for input parameters are : [', Z_mcmc[0], tq_mcmc[0], 10**log_tau_mcmc[0], ']')
-
+    #print('Best fit [Z, tq, tau] values found by SNITCH for input parameters are : [', Z_mcmc[0], tq_mcmc[0], 10**log_tau_mcmc[0], ']')
+    return(map(lambda v: (v[1], v[2]-v[1], v[1]-v[0]), zip(*np.percentile(samples, [16,50,84], axis=0))))
 
 if __name__ == "__main__":
 
