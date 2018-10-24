@@ -107,7 +107,9 @@ def snitch(ha, e_ha, d4000, e_d4000, hb, e_hb, hdA, e_hdA, mgfe, e_mgfe, redshif
 
     # Print out the best fit values. Note that the actual value of tau in Gyr is printed, not the log value. 
 
-    #print('Best fit [Z, tq, tau] values found by SNITCH for input parameters are : [', Z_mcmc[0], tq_mcmc[0], 10**log_tau_mcmc[0], ']')
+    print(r'Best fit Z value (3.s.f.) found by SNITCH for', ident, 'input parameters are : [ {0:1.3f}, +{1:1.3f}, -{2:1.3f} ]'.format(Z_mcmc[0], Z_mcmc[1], Z_mcmc[2]))
+    print(r'Best fit t_q value (3.s.f.) found by SNITCH for', ident, 'input parameters are : [ {0:1.3f}, +{1:1.3f}, -{2:1.3f} ]'.format(tq_mcmc[0], tq_mcmc[1], tq_mcmc[2]))
+    print(r'Best fit tau value (3.s.f.) found by SNITCH for', ident, 'input parameters are : [ {0:1.3f}, +{1:1.3f}, -{2:1.3f} ]'.format(10**log_tau_mcmc[0], 10**(log_tau_mcmc[1]+log_tau_mcmc[0])-10**log_tau_mcmc[0], 10**log_tau_mcmc[0] - 10**(log_tau_mcmc[0]-log_tau_mcmc[2])))
     return(map(lambda v: (v[1], v[2]-v[1], v[1]-v[0]), zip(*np.percentile(samples, [16,50,84], axis=0))))
 
 if __name__ == "__main__":
@@ -141,7 +143,7 @@ if __name__ == "__main__":
 
     nll = lambda *args: -lnprobability(*args)
 
-    snitch(arg.ha, arg.e_ha, arg.d4000, arg.e_d4000, arg.hb, arg.e_hb, arg.hdA, arg.e_hdA, arg.mgfe, arg.e_mgfe, arg.redshift, arg.ident)
+    Z_mcmc, tq_mcmc, tau_mcmc = snitch(arg.ha, arg.e_ha, arg.d4000, arg.e_d4000, arg.hb, arg.e_hb, arg.hdA, arg.e_hdA, arg.mgfe, arg.e_mgfe, arg.redshift, arg.ident)
 
 
 

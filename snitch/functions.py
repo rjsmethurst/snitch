@@ -306,7 +306,7 @@ def walker_plot(samples, nwalkers, ndim=3, limit=-1, truth=[np.nan, np.nan, np.n
     ax3.set_xlabel(r'step number')
     ax1.set_ylabel(r'$Z$')
     ax2.set_ylabel(r'$t_{quench}$')
-    ax3.set_ylabel(r'$\tau$')
+    ax3.set_ylabel(r'$\log_{10}$ $\tau$')
     plt.subplots_adjust(hspace=0.1)
 
     return fig
