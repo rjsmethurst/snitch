@@ -36,7 +36,9 @@ where e_xxx is the error on the spectal parameter xxx. For example:
 will print a similar result to the following:
 
 ``` Best fit Z value (3.s.f.) found by SNITCH for  sdss-657 input parameters are : [ 0.979, +0.377, -0.326 ]```
+
 ```Best fit t_q value (3.s.f.) found by SNITCH for  sdss-657 input parameters are : [ 12.420, +0.350, -0.478 ]```
+
 ```Best fit tau value (3.s.f.) found by SNITCH for  sdss-657 input parameters are : [ 0.651, +0.229, -0.162 ]```
 
 and will produce plots showing the MCMC 'walker' steps with time and as a corner plot. 
