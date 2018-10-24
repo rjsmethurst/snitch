@@ -31,11 +31,13 @@ In it's default format, snitch needs 5 spectral parameters, their corresponding 
 
 where e_xxx is the error on the spectal parameter xxx. For example:
 
-```python3 snitch.py 15.6 1.3 2.3 0.3 2 0.1 3.2 0.3 1.7 0.3 0.015 'sdss-657'```
+```python3 snitch.py 15.1 1.3 1.45 0.3 2.3 0.1 1.7 0.3 2.6 0.3 0.015 'sdss-657'```
 
-will print the following result:
+will print a similar result to the following:
 
-```   Best fit [Z, tq, tau] values found by SNITCH for input parameters are : [ 1.342 13.068 0.355 ]```
+``` Best fit Z value (3.s.f.) found by SNITCH for  sdss-657 input parameters are : [ 0.979, +0.377, -0.326 ]```
+```Best fit t_q value (3.s.f.) found by SNITCH for  sdss-657 input parameters are : [ 12.420, +0.350, -0.478 ]```
+```Best fit tau value (3.s.f.) found by SNITCH for  sdss-657 input parameters are : [ 0.651, +0.229, -0.162 ]```
 
 and will produce plots showing the MCMC 'walker' steps with time and as a corner plot. 
 
@@ -71,4 +73,4 @@ You may wish to adapt `snitch.py` so that the spectral measurements of many spec
 
 ---
 
-If you have any other questions about running SNITCH or how to adapt it for your purpose beyond the basic usage please raise an issue in the repository (if you are not familar with GitHub [here's](https://help.github.com/articles/creating-an-issue/) some instructions on how to raise an issue) or contact me at rebecca dot smethurst AT nottingham dot ac dot uk.  
+If you have any other questions about running SNITCH or how to adapt it for your purpose beyond the basic usage please raise an issue in the repository (if you are not familar with GitHub [here's](https://help.github.com/articles/creating-an-issue/) some instructions on how to raise an issue) or contact me at rebecca dot smethurst AT physics dot ox dot ac dot uk.  
