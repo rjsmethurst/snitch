@@ -8,6 +8,8 @@ from itertools import product
 
 from scipy.interpolate import NearestNDInterpolator
 
+snitchdir = os.path.dirname(os.path.realpath(__file__))
+
 ######################################################################################################
 #
 # August 1st 2018, RJS
@@ -38,10 +40,10 @@ zsolmets = pad_solmet[(zmets-1).astype(int)]
 time_steps = Planck15.age(10**np.linspace(-0.824, -3.295, 15)).reshape(-1,1,1).value
 taus = 10**np.linspace(6, 9.778, 50)/1e9
 
-with np.load('/Users/becky/Projects/mangaagn/snitch/snitch/emls_par_pool_mapped_nozshift_ppxfcorrect_AA_12zmet.npz') as orig_pred:
+with np.load(os.path.join(snitchdir, 'emls_par_pool_mapped_nozshift_ppxfcorrect_AA_12zmet.npz')) as orig_pred:
     pred = orig_pred['lookup']
     
-with np.load('/Users/becky/Projects/mangaagn/snitch/snitch/emls_mask_par_pool_mapped_nozshift_ppxfcorrect_AA_12zmet.npz') as orig_mask:
+with np.load(os.path.join(snitchdir, 'emls_mask_par_pool_mapped_nozshift_ppxfcorrect_AA_12zmet.npz')) as orig_mask:
     mask = orig_mask['lookupmask']
     
 tqs = np.append(np.flip(time_steps.flatten()[0]- 10**(np.linspace(7, np.log10((time_steps.flatten()[0]-0.1)*1e9), 48))/1e9, axis=0), [time_steps.flatten()[0]-0.001, time_steps.flatten()[0]+0.1], axis=0)

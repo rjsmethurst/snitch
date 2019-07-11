@@ -6,3 +6,5 @@ astropy==3.0
 corner==2.0.1
 numpy==1.14.3
 fsps==0.2.2
+pydl==0.7.0
+ppxf

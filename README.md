@@ -7,9 +7,20 @@ Code to conduct Bayesian inference of star formation histories using measured em
 
 ## Prerequisites
 
-This code is written in Python 3. To run snitch you also need [emcee](http://dfm.io/emcee/current/user/install) and [python-fsps](http://dfm.io/python-fsps/current/installation/) installed. Please follow the instructions on the links provided to ensure that these are installed properly before continuing. 
+Snitch is written in Python 3. To run snitch you will need to set up the environment.
 
-Similarly, the MaNGA MPL-5 DAP python scripts need to be installed. These are currently only available for SDSS members at this [link](https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-5/dap/LocalInstall) (requires log in). 
+Install FSPS from https://github.com/cconroy20/fsps
+
+When building FSPS on Linux with gfortran, add "-fPIC" to the fortran compiler flags in the Makefile.  It is required for python-fsps.
+
+After FSPS is installed and SPS_HOME is set to its install directory, use pip3 to install the Python requirements
+
+`python3 -m pip install -r requirements.txt`
+
+Pip will install dependencies including
+ [emcee](http://dfm.io/emcee/current/user/install) and [python-fsps](http://dfm.io/python-fsps/current/installation/) If you don't use pip, please follow the instructions on the links provided to ensure that these are installed properly before continuing. 
+
+The MaNGA MPL-5 DAP python scripts need to be installed. These are available for SDSS members at this [link](https://trac.sdss.org/wiki/MANGA/TRM/TRM_MPL-5/dap/LocalInstall) (requires log in). Or on Github at https://github.com/sdss/mangadap
 
 ## Installation 
 

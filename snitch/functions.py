@@ -9,6 +9,8 @@ from itertools import product
 from scipy import interpolate
 import fsps
 
+import mangadap
+
 from mangadap.proc.templatelibrary import TemplateLibrary
 from mangadap.proc.ppxffit import PPXFFit
 from mangadap.proc.stellarcontinuummodel import StellarContinuumModelBitMask
