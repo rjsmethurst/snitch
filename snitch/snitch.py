@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from snitch_mcmc import *
 from functions import walker_plot
 from astropy.cosmology import Planck15
@@ -13,8 +15,10 @@ from argparse import ArgumentParser
 
 
 import resource
-resource.setrlimit(resource.RLIMIT_NOFILE, (10000,-1))
-
+try:
+    resource.setrlimit(resource.RLIMIT_NOFILE, (10000,-1))
+except:
+    resource.setrlimit(resource.RLIMIT_NOFILE, (2048,2048))
 np.set_printoptions(suppress=True, precision=4)
 
 ######################################################################################################
