@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import sys
 import os
 from scipy.optimize import basinhopping
+from scipy import interpolate
 
 from argparse import ArgumentParser
 
@@ -33,24 +34,63 @@ np.set_printoptions(suppress=True, precision=4)
 #
 ######################################################################################################
 
-def snitch(ha, e_ha, d4000, e_d4000, hb, e_hb, hdA, e_hdA, mgfe, e_mgfe, redshift, ident):
+
+pad_zmet = np.array([0.0002, 0.0003, 0.0004, 0.0005, 0.0006, 0.0008, 0.001, 0.0012, 0.0016, 0.0020, 0.0025, 0.0031, 0.0039, 0.0049, 0.0061, 0.0077, 0.0096, 0.012, 0.015, 0.019, 0.024, 0.03])
+pad_zmetsol = 0.019
+
+pad_solmet = pad_zmet/pad_zmetsol
+zmets = np.append((np.linspace(0, 10, 11)*2 + 1).astype(int), [22.])
+zsolmets = pad_solmet[(zmets-1).astype(int)] 
+
+#ages = Planck15.age(10**np.linspace(-0.824, -2.268, 25))[-7:-5].value
+time_steps = Planck15.age(10**np.linspace(-0.824, -3.295, 15)).reshape(-1,1,1).value
+taus = 10**np.linspace(6, 9.778, 50)/1e9
+
+with np.load('/Users/smethurst/Projects/mangaagn/snitch/snitch/emls_par_pool_mapped_nozshift_ppxfcorrect_AA_12zmet.npz') as orig_pred:
+    pred = orig_pred['lookup']
+    
+with np.load('/Users/smethurst/Projects/mangaagn/snitch/snitch/emls_mask_par_pool_mapped_nozshift_ppxfcorrect_AA_12zmet.npz') as orig_mask:
+    mask = orig_mask['lookupmask']
+    
+tqs = np.append(np.flip(time_steps.flatten()[0]- 10**(np.linspace(7, np.log10((time_steps.flatten()[0]-0.1)*1e9), 48))/1e9, axis=0), [time_steps.flatten()[0]-0.001, time_steps.flatten()[0]+0.1], axis=0)
+
+sv = np.array(list(product(time_steps[0][0], tqs, np.log10(taus), zsolmets)))
+for n in range(1, len(time_steps)):
+    tqs = np.append(np.flip(time_steps.flatten()[n]- 10**(np.linspace(7, np.log10((time_steps.flatten()[n]-0.1)*1e9), 48))/1e9, axis=0), [time_steps.flatten()[n]-0.001, time_steps.flatten()[n]+0.1], axis=0)
+    sv = np.append(sv, np.array(list(product(time_steps[n][0], tqs, np.log10(taus), zsolmets))), axis=0)
+    
+
+masked_sp = np.ma.masked_array(data=pred, mask=mask).reshape(15, 50, 50, 12, -1)
+
+
+def snitch(ha, e_ha, d4000, e_d4000, hb, e_hb, hdA, e_hdA, mgfe, e_mgfe, redshift, ident, opstart= [1.0, -1.0, 1.0]):
 
     age = Planck15.age(redshift).value
     nll = lambda *args: -lnprobability(*args)
 
     nwalkers = 100 # number of monte carlo chains
     nsteps= 200 # number of steps in the monte carlo chain
-    opstart = [1.0, 12.0, np.log10(0.25)] # starting place for the scipy optimisation chains
     burnin = 1000 # number of steps in the burn in phase of the monte carlo chain
     ndim = 3 # number of dimensions in the SFH model
 
+    # idx = np.searchsorted(time_steps.flatten(), age)
+    # if idx == len(time_steps.flatten()):
+    #     idx = len(time_steps.flatten())-1
+    # else:
+    #     pass
+    # # newmasked_sp = masked_sp[idx,:,:,:,:]
+    # # func = interpolate.RegularGridInterpolator((tqs, np.log10(taus), zsolmets), newmasked_sp, method='linear', bounds_error=False, fill_value=np.nan)    
+    # newsv = sv[30000*(idx):30000*(idx+1)][:,1:]
+    # newmasked_sp = masked_sp[idx,:,:,:,:]
+    # func = interpolate.NearestNDInterpolator(newsv, newmasked_sp.reshape(-1, 9))
+    func = np.sin
 
-    result_bh = basinhopping(nll, opstart, minimizer_kwargs={"args": (ha, e_ha, d4000, e_d4000, hb, e_hb, hdA, e_hdA, mgfe, e_mgfe, age), "method":'Nelder-Mead'})
+    result_bh = basinhopping(nll, opstart, minimizer_kwargs={"args": (ha, e_ha, d4000, e_d4000, hb, e_hb, hdA, e_hdA, mgfe, e_mgfe, age, func), "method":'Nelder-Mead'})
     print(result_bh)
     if "successfully" in result_bh.message[0]:
-        start = result_bh['x']
+       start = result_bh['x']
     else:
-        start = np.array(opstart)
+       start = np.array(opstart)
 
     #The rest of this file calls the emcee module which is initialised in the sample function of the posterior file. 
     samples = sample(path=os.getcwd(), ndim=ndim, nwalkers=nwalkers, nsteps=nsteps, burnin=burnin, start=start, ha=ha, e_ha=e_ha, d4000=d4000, e_d4000=e_d4000, hb=hb, e_hb=e_hb, hdA=hdA, e_hdA=e_hdA, mgfe=mgfe, e_mgfe=e_mgfe, age=age, ID=ident)
@@ -70,23 +110,26 @@ def snitch(ha, e_ha, d4000, e_d4000, hb, e_hb, hdA, e_hdA, mgfe, e_mgfe, redshif
         lnp.close()
         del lnp, lk, idxs, slk, cluster_idx 
                 
-    Z_mcmc, tq_mcmc, log_tau_mcmc,  = map(lambda v: (v[1], v[2]-v[1], v[1]-v[0]), zip(*np.percentile(samples, [16,50,84], axis=0)))
+    dtq_mcmc, log_tau_mcmc, Z_mcmc,  = map(lambda v: (v[1], v[2]-v[1], v[1]-v[0]), zip(*np.percentile(samples, [16,50,84], axis=0)))
 
     # Save the inferred SFH parameters. In each case the elements are [best fit value, plus uncertainty,  minus uncertainty].
     # Note that the log tau values are recorded. 
-    np.save('inferred_SFH_parameters_ID_'+str(ident)+'.npy', [Z_mcmc, tq_mcmc, log_tau_mcmc])
+    np.save('inferred_SFH_parameters_ID_'+str(ident)+'.npy', [dtq_mcmc, log_tau_mcmc, Z_mcmc])
     
     # Produce the emcee corner plot showing which part of the parameter space the walkers explored. 
 
-    fig = corner.corner(samples, labels=[r'$Z$', r'$t_q$', r'$\log_{10}\tau$'], quantiles=([0.16, 0.5, 0.84]))    
-    fig.savefig('snitch_output_corner_'+str(ident)+'.pdf')
-    plt.close(fig)
+    try:
+        fig = corner.corner(samples, labels=[r'$\delta t_q$', r'$\log_{10}\tau$', r'Z'], quantiles=([0.16, 0.5, 0.84]))    
+        fig.savefig('snitch_output_corner_'+str(ident)+'.pdf')
+        plt.close(fig)
+    except(ValueError):
+        pass
 
     ### The lines below produce the walker positions with each step for the burn in phase and the rest of the run.
     ### Uncomment this section if you'd like these produced. 
 
     try:
-        fig = walker_plot(samples, nwalkers, ndim, -1, [Z_mcmc[0], tq_mcmc[0], log_tau_mcmc[0]])
+        fig = walker_plot(samples, nwalkers, ndim, -1, [dtq_mcmc[0], log_tau_mcmc[0], Z_mcmc[0]])
         fig.tight_layout()
         fig.savefig('walkers_steps_with_pruning_'+str(ident)+'.pdf')
         plt.close(fig)
@@ -95,7 +138,7 @@ def snitch(ha, e_ha, d4000, e_d4000, hb, e_hb, hdA, e_hdA, mgfe, e_mgfe, redshif
 
     with np.load('samples_burn_in_'+str(ident)+'.npz') as burninload:
         try:
-            fig = walker_plot(burninload['samples'], nwalkers, ndim, -1, [Z_mcmc[0], tq_mcmc[0], log_tau_mcmc[0]])
+            fig = walker_plot(burninload['samples'], nwalkers, ndim, -1, [dtq_mcmc[0], log_tau_mcmc[0], Z_mcmc[0]])
             fig.tight_layout()
             fig.savefig('walkers_steps_burn_in_without_pruning_'+str(ident)+'.pdf')
             plt.close(fig)
@@ -108,7 +151,7 @@ def snitch(ha, e_ha, d4000, e_d4000, hb, e_hb, hdA, e_hdA, mgfe, e_mgfe, redshif
     # Print out the best fit values. Note that the actual value of tau in Gyr is printed, not the log value. 
 
     print(r'Best fit Z value (3.s.f.) found by SNITCH for', ident, 'input parameters are : [ {0:1.3f}, +{1:1.3f}, -{2:1.3f} ]'.format(Z_mcmc[0], Z_mcmc[1], Z_mcmc[2]))
-    print(r'Best fit t_q value (3.s.f.) found by SNITCH for', ident, 'input parameters are : [ {0:1.3f}, +{1:1.3f}, -{2:1.3f} ]'.format(tq_mcmc[0], tq_mcmc[1], tq_mcmc[2]))
+    print(r'Best fit dt_q value (3.s.f.) found by SNITCH for', ident, 'input parameters are : [ {0:1.3f}, +{1:1.3f}, -{2:1.3f} ]'.format(dtq_mcmc[0], dtq_mcmc[1], dtq_mcmc[2]))
     print(r'Best fit tau value (3.s.f.) found by SNITCH for', ident, 'input parameters are : [ {0:1.3f}, +{1:1.3f}, -{2:1.3f} ]'.format(10**log_tau_mcmc[0], 10**(log_tau_mcmc[1]+log_tau_mcmc[0])-10**log_tau_mcmc[0], 10**log_tau_mcmc[0] - 10**(log_tau_mcmc[0]-log_tau_mcmc[2])))
     return(map(lambda v: (v[1], v[2]-v[1], v[1]-v[0]), zip(*np.percentile(samples, [16,50,84], axis=0))))
 
@@ -136,14 +179,14 @@ if __name__ == "__main__":
 
     nwalkers = 100 # number of monte carlo chains
     nsteps= 200 # number of steps in the monte carlo chain
-    opstart = [1.0, 12.0, np.log10(0.25)] # starting place for the scipy optimisation chains
+    opstart = [1.0, -1.0, 1.0] # starting place for the scipy optimisation chains [deltatq, tau, Z]
     burnin = 1000 # number of steps in the burn in phase of the monte carlo chain
     ndim = 3 # number of dimensions in the SFH model
 
 
     nll = lambda *args: -lnprobability(*args)
 
-    Z_mcmc, tq_mcmc, tau_mcmc = snitch(arg.ha, arg.e_ha, arg.d4000, arg.e_d4000, arg.hb, arg.e_hb, arg.hdA, arg.e_hdA, arg.mgfe, arg.e_mgfe, arg.redshift, arg.ident)
+    dtq_mcmc, tau_mcmc, Z_mcmc = snitch(arg.ha, arg.e_ha, arg.d4000, arg.e_d4000, arg.hb, arg.e_hb, arg.hdA, arg.e_hdA, arg.mgfe, arg.e_mgfe, arg.redshift, arg.ident)
 
 
 

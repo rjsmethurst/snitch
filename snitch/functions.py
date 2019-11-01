@@ -1,8 +1,8 @@
 import os
 import numpy as np
 
-import matplotlib as mpl
-mpl.use("Agg")
+# import matplotlib as mpl
+# mpl.use("Agg")
 import matplotlib.pyplot as plt
 
 from itertools import product
@@ -304,9 +304,9 @@ def walker_plot(samples, nwalkers, ndim=3, limit=-1, truth=[np.nan, np.nan, np.n
     ax1.tick_params(axis='x', labelbottom='off')
     ax2.tick_params(axis='x', labelbottom='off')
     ax3.set_xlabel(r'step number')
-    ax1.set_ylabel(r'$Z$')
-    ax2.set_ylabel(r'$t_{quench}$')
-    ax3.set_ylabel(r'$\log_{10}$ $\tau$')
+    ax3.set_ylabel(r'$Z$')
+    ax1.set_ylabel(r'$\delta t_{q}$')
+    ax2.set_ylabel(r'$\log_{10}$ $\tau$')
     plt.subplots_adjust(hspace=0.1)
 
     return fig
