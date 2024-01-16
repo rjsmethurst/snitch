@@ -91,7 +91,7 @@ if __name__ == "__main__":
     manga_wave = np.load("manga_wavelengths_AA.npy")
     manga_hz = c*(un.km/un.s).to(un.AA/un.s)/manga_wave
 
-    for n in range(len(time_steps)):
+    for n in trange(len(time_steps)):
 
         # tqs needs to be a changeable array so that the logarithmic nature where the grid is finer before the observed time is conserved
         # no matter the time of observation. i.e. tq needs to change as t_obs changes. 
@@ -102,10 +102,10 @@ if __name__ == "__main__":
 
         sfr = expsfh(tq, tau, ages).reshape(ages.shape[0], -1) 
 
-        print("../../code/spectrum_all_star_formation_rates_to_to_"+str(len(time_steps))+"_tq_"+str(len(tqs))+"_tau_"+str(len(taus))+"_Z_"+str(len(zmets))+"_newtqs.npy")
+        print("spectrum_all_star_formation_rates_to_to_"+str(len(time_steps))+"_tq_"+str(len(tqs))+"_tau_"+str(len(taus))+"_Z_"+str(len(zmets))+"_newtqs.npy")
 
-        if os.path.isfile("../../code/spectrum_all_star_formation_rates_to_"+str(len(time_steps))+"_tq_"+str(len(tqs))+"_tau_"+str(len(taus))+"_Z_"+str(len(zmets))+"_newtqs.npy"):
-            prev_fluxes = np.load("../../code/spectrum_all_star_formation_rates_to_"+str(len(time_steps))+"_tq_"+str(len(tqs))+"_tau_"+str(len(taus))+"_Z_"+str(len(zmets))+"_newtqs.npy", mmap_mode='r')
+        if os.path.isfile("spectrum_all_star_formation_rates_to_"+str(len(time_steps))+"_tq_"+str(len(tqs))+"_tau_"+str(len(taus))+"_Z_"+str(len(zmets))+"_newtqs.npy"):
+            prev_fluxes = np.load("spectrum_all_star_formation_rates_to_"+str(len(time_steps))+"_tq_"+str(len(tqs))+"_tau_"+str(len(taus))+"_Z_"+str(len(zmets))+"_newtqs.npy", mmap_mode='r')
             print(len(prev_fluxes))
             if len(prev_fluxes)==(len(tqs)*len(taus)*len(time_steps.flatten())*len(zmets)):
                 fluxes = prev_fluxes
@@ -114,12 +114,12 @@ if __name__ == "__main__":
                 more_fluxes = np.array(list(map(generate_spectra, tqdm(list(product(time_steps[n], [zmets], [ages], sfr.T)))))).reshape(-1, len(manga_wave))
                 print("We're still generating more spectra, strap in for a wait...")
                 fluxes = np.append(prev_fluxes, more_fluxes, axis=0)
-                np.save("../../code/spectrum_all_star_formation_rates_to_"+str(len(time_steps))+"_tq_"+str(len(tqs))+"_tau_"+str(len(taus))+"_Z_"+str(len(zmets))+"_newtqs.npy", np.append(fluxes, more_fluxes, axis=0))
+                np.save("spectrum_all_star_formation_rates_to_"+str(len(time_steps))+"_tq_"+str(len(tqs))+"_tau_"+str(len(taus))+"_Z_"+str(len(zmets))+"_newtqs.npy", np.append(fluxes, more_fluxes, axis=0))
 
         else:
             print("You haven't generated spectra before for these SFH parameters, so this is going to take some time...")
             fluxes = np.array(list(map(generate_spectra, tqdm(list(product(time_steps[n], [zmets], [ages], sfr.T)))))).reshape(-1, len(manga_wave))
-            np.save("../../code/spectrum_all_star_formation_rates_to_"+str(len(time_steps))+"_tq_"+str(len(tqs))+"_tau_"+str(len(taus))+"_Z_"+str(len(zmets))+"_newtqs.npy", fluxes)
+            np.save("spectrum_all_star_formation_rates_to_"+str(len(time_steps))+"_tq_"+str(len(tqs))+"_tau_"+str(len(taus))+"_Z_"+str(len(zmets))+"_newtqs.npy", fluxes)
        
 
 
